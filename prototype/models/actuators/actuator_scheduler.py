@@ -2,12 +2,11 @@ from re import S
 import time
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
+from typing import List
 
 from datetime import datetime
-from typing import Dict, List, Tuple
-from csv import DictWriter
 
-from models.sensors.sensors_controller import sensor_reader
+
 from models.actuators.actuator_repository import actuator_repository
 from models.actuators.config import *
 
@@ -16,7 +15,7 @@ logging.basicConfig(filename='amps_v2.log',
                     level=logging.INFO)
 
 
-class SchedulerV2:
+class ActuatorScheduler:
 
     def __init__(self):
         # converting times strings to time objects
@@ -35,7 +34,6 @@ class SchedulerV2:
         self.create_irrigation_jobs(irrigation_schedule=irrigation_schedule)
         self.create_air_jobs(air_schedule=air_schedule)
         self.create_lighting_jobs(lighting_schedule=lighting_schedule)
-        self.create_sensor_job()
         self.create_other_jobs()
         self.status = False
         self.initiated = False
@@ -65,6 +63,16 @@ class SchedulerV2:
     def turn_off_actuators(self):
         actuator_repository.fans_off()
         actuator_repository.main_led.off()
+    
+    @staticmethod
+    def valid_schedule(time_schedule):
+        time_schedule.sort()
+        for i in range(len(time_schedule) - 1):
+            if time_schedule[i][0] >= time_schedule[i][1]:
+                raise Exception(f'This time window is not valid: {time_schedule[i][0].time()} to {time_schedule[i][1].time()}')
+            for j in range(i + 1 , len(time_schedule)):
+                if time_schedule[i][1] > time_schedule[j][0]:
+                    raise Exception(f'This windows have overlaps: {time_schedule[i][0].time()} to {time_schedule[i][1].time()} and {time_schedule[j][0].time()} to {time_schedule[j][1].time()}')
 
     def create_irrigation_jobs(self, irrigation_schedule: List[datetime]):
         irrigation_jobs = [self.scheduler.add_job(actuator_repository.run_water_cycle, 'cron', id=f'IRG-{irrigation_time.time()}',
@@ -76,6 +84,9 @@ class SchedulerV2:
         return irrigation_jobs
 
     def create_air_jobs(self, air_schedule):
+        self.valid_schedule(time_schedule=self.air_schedule+air_schedule)
+
+
         air_on_jobs = [
             self.scheduler.add_job(actuator_repository.fans_on, 'cron', hour=air_on_time.hour, id=f'AIR-ON-{air_on_time.time()}',
                                    minute=air_on_time.minute)
@@ -91,6 +102,9 @@ class SchedulerV2:
         return air_on_jobs + air_off_jobs
 
     def create_lighting_jobs(self, lighting_schedule):
+
+        self.valid_schedule(time_schedule=self.lighting_schedule+lighting_schedule)
+
         lighting_on_jobs = [self.scheduler.add_job(actuator_repository.lights_on, 'cron', id=f'LIGHT-ON-{lighting_on_time.time()}',
                                                    hour=lighting_on_time.hour, minute=lighting_on_time.minute) for
                             lighting_on_time, lighting_off_time in lighting_schedule]
@@ -139,24 +153,10 @@ class SchedulerV2:
                     logging.error(e)
                     raise e
 
-    def sensor_read_and_publish(self):
-        samples = sensor_reader.read_sensors()
-        print(samples)
-        logging.info(samples)
-
-    def create_sensor_job(self):
-        return self.scheduler.add_job(self.sensor_read_and_publish, 'interval', seconds=3)
-
-
     def create_other_jobs(self):
         self.scheduler.add_job(actuator_repository.sol_check, 'interval', minutes=30)
 
-    def store_samples(self, samples: Dict, file_name: str):
-        with open(file_name, 'a') as csv_file:
-            fields = samples.keys()
-            dict_writer = DictWriter(csv_file, fields)
-            dict_writer.writerow(samples)
-            csv_file.close()
+
 
     def start(self):
         if not self.status:
@@ -165,15 +165,12 @@ class SchedulerV2:
             self.status = True
             self.initiated = True
 
-        
-        while True:
-            pass
 
     def pause(self):
         if self.status:
             self.scheduler.pause()
+            print('pause')
             self.turn_off_actuators()
             self.status = False
 
-scheduler_v2 = SchedulerV2()
-# scheduler_v2.start()
+actuator_scheduler = ActuatorScheduler()
