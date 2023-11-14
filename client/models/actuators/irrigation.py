@@ -76,7 +76,7 @@ class Irrigation:
         levels_sols = [self.levels_sols[level-1] for level in levels] if levels else self.levels_sols
         print(levels, levels_sols)
         # return
-        primeTime = 40
+        primeTime = 20
         source_sol.on()
         time.sleep(20)
         # #levels
