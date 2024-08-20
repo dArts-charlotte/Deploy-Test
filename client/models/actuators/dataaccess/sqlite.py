@@ -48,19 +48,19 @@ def insert_air_schedule_with_datetime(conn, start_datetime, end_datetime):
     )
     conn.commit()
 
-def remove_irrigation_schedule(conn, start_time):
+def remove_irrigation_schedule(conn, start_time, end_time):
     cursor = conn.cursor()
     cursor.execute(
         "DELETE FROM irrigation_schedule WHERE start_time = ?",
-        (start_time,)
+        (start_time, end_time)
     )
     conn.commit()
 
 def remove_lighting_schedule(conn, start_time, end_time):
     cursor = conn.cursor()
     cursor.execute(
-        "DELETE FROM lighting_schedule WHERE start_time = ?AND end_time = ?",
-        (start_time,)
+        "DELETE FROM lighting_schedule WHERE start_time = ? AND end_time = ?",
+        (start_time, end_time)
     )
     conn.commit()
 
