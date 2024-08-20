@@ -204,12 +204,12 @@ class ActuatorScheduler:
                     sqlite.remove_air_schedule(start_time=on_time, end_time=off_time)
                     self.air_schedule = sqlite.load_air_schedule(conn)
                     
-
+                conn.close()
+                
                 if self.status:
                     self.reinitiate_state()
             except Exception as e:
                 logging.error(e)
-                conn.close()
                 raise e
         
 
