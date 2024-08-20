@@ -196,8 +196,10 @@ class ActuatorScheduler:
                 self.scheduler.remove_job(off_id)
                 if job_type == 'LIGHT':
                     sqlite.remove_lighting_schedule(start_time=on_time, end_time=off_time)
+                    self.lighting_schedule = sqlite.load_lighting_schedule(conn)
                 elif job_type == 'AIR':
                     sqlite.remove_air_schedule(start_time=on_time, end_time=off_time)
+                    self.air_schedule = sqlite.load_air_schedule(conn)
                     
 
                 if self.status:
