@@ -35,9 +35,9 @@ class ActuatorScheduler:
 
         
 
-        self.add_irrigation_jobs(irrigation_schedule=self.irrigation_schedule)
-        self.add_air_jobs(air_schedule=self.air_schedule)
-        self.add_lighting_jobs(lighting_schedule=self.lighting_schedule)
+        self.add_irrigation_jobs(irrigation_schedule=self.irrigation_schedule, alter=False)
+        self.add_air_jobs(air_schedule=self.air_schedule, alter=False)
+        self.add_lighting_jobs(lighting_schedule=self.lighting_schedule, alter=False)
         self.status = False
         self.initiated = False
 
