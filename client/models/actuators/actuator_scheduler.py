@@ -188,7 +188,6 @@ class ActuatorScheduler:
             raise e
 
     def remove_window_jobs(self, scheduled_window, job_type):
-        with  sqlite.get_database_connection() as conn:
             try:    
                 on_time, off_time = [datetime.strptime(scheduled_time, "%H:%M:%S") for scheduled_time in
                                     scheduled_window.split('-')]
@@ -198,13 +197,17 @@ class ActuatorScheduler:
                 self.scheduler.remove_job(on_id)
                 self.scheduler.remove_job(off_id)
                 if job_type == 'LIGHT':
-                    sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
-                    self.lighting_schedule = sqlite.load_lighting_schedule(conn)
+                    with  sqlite.get_database_connection() as conn:
+                        sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
+                        self.lighting_schedule = sqlite.load_lighting_schedule(conn)
+                        conn.close()
+
                 elif job_type == 'AIR':
-                    sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
-                    self.air_schedule = sqlite.load_air_schedule(conn)
+                    with  sqlite.get_database_connection() as conn:
+                        sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
+                        self.air_schedule = sqlite.load_air_schedule(conn)
+                        conn.close()
                     
-                conn.close()
                 
                 if self.status:
                     self.reinitiate_state()
