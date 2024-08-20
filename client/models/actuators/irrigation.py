@@ -10,6 +10,7 @@ import os
 import sys
 # Modify PATH so we can import files from elsewhere in this repo
 from os.path import dirname, join, abspath
+from models.actuators.config import IRRIGATION_LEVEL_OFFSET
 
 sys.path.insert(0, abspath(join(dirname(__file__), '../..')))
 
@@ -25,7 +26,7 @@ class Irrigation:
         self.tank_switch_sol = DigitalOutputDevice(tank_switch_sol_gpio)
         self.nutr_sol = DigitalOutputDevice(nutr_sol_gpio)
         self.levels_sols = [DigitalOutputDevice(level_sol_gpio) for level_sol_gpio in levels_sol_gpios]
-
+        print(len(self.levels_sols))
 
     
 
@@ -76,29 +77,33 @@ class Irrigation:
         levels_sols = [self.levels_sols[level-1] for level in levels] if levels else self.levels_sols
         print(levels, levels_sols)
         # return
-        primeTime = 20
+        primeTime = 15
         source_sol.on()
         time.sleep(20)
-        # #levels
-        for i,sol in enumerate(levels_sols):
-            print(f'Prime Process running for level {i+1}')
+        levels = range(1, 9) if not levels else levels
+        levels = list(reversed(levels))
+        # levels
+        for i,level in enumerate(levels):
+            sol = self.levels_sols[level - 1]
+            level_duration = duration + IRRIGATION_LEVEL_OFFSET[level]
+            print(f'Prime Process running for level {level}')
             self.pressure_relief_sol.on()
             print('Pressure relief sol is on!')
             sol.on()
-            print(f'Solenoid level {i+1} is on!')
+            print(f'Solenoid level {level} is on!')
             print(f'Sleeping for {primeTime}...')
 
             time.sleep(primeTime)
             self.pressure_relief_sol.off()
             print('Pressure relief sol is off!')
 
-            print(f'Sleeping for {duration}...')
+            print(f'Sleeping for {level_duration}...')
 
-            time.sleep(duration)
+            time.sleep(level_duration)
             sol.off()
-            print(f'Solenoid level {i+1} is off!')
+            print(f'Solenoid level {level} is off!')
 
-            print(f'draingin level {i+1}!')
+            print(f'draingin level {level}!')
 
             time.sleep(1)
             self.pressure_relief_sol.on()
@@ -111,6 +116,10 @@ class Irrigation:
             time.sleep(1)
 
         source_sol.off()
+
+
+    def run_cycle_level(self, level_sol, duration):
+        pass
 
 
     def sol_check(self):

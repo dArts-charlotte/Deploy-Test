@@ -33,7 +33,7 @@ class ActuatorScheduler:
                         for time_on, time_off in AIR_SCHEDULE]
 
         self.add_irrigation_jobs(irrigation_schedule=irrigation_schedule)
-        # self.add_air_jobs(air_schedule=air_schedule)
+        self.add_air_jobs(air_schedule=air_schedule)
         self.add_lighting_jobs(lighting_schedule=lighting_schedule)
         # self.create_other_jobs()
         self.status = False
@@ -83,7 +83,7 @@ class ActuatorScheduler:
                         f'This two time windows have overlaps: {time_schedule[0][0].time()} to {time_schedule[0][1].time()} and {time_schedule[j][0].time()} to {time_schedule[j][1].time()}')
 
     def run_immediate_irrigation_job(self, duration):
-        self.immediate_scheduler.add_job(lambda :actuator_controller.irrigation_controller.run_cycle(duration=duration))
+        self.immediate_scheduler.add_job(lambda :actuator_controller.irrigation_controller.run_cycle(duration=duration, nutrient=False))
         print(self.immediate_scheduler.get_jobs())
 
     def add_irrigation_jobs(self, irrigation_schedule: List):
@@ -102,13 +102,13 @@ class ActuatorScheduler:
         self.valid_schedule(time_schedule=self.air_schedule + air_schedule)
         air_on_jobs = [
             self.scheduler.add_job(actuator_controller.air_controller.on, 'cron', hour=air_on_time.hour,
-                                   id=f'AIR-ON-{air_on_time.time()}',
+                                   id=f'FAN-ON-{air_on_time.time()}',
                                    minute=air_on_time.minute)
             for air_on_time, air_off_time in air_schedule
         ]
         air_off_jobs = [
             self.scheduler.add_job(actuator_controller.air_controller.off, 'cron', hour=air_off_time.hour,
-                                   id=f'AIR-OFF-{air_off_time.time()}',
+                                   id=f'FAN-OFF-{air_off_time.time()}',
                                    minute=air_off_time.minute)
             for air_on_time, air_off_time in air_schedule
         ]

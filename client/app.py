@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from flask import Flask, render_template, redirect, request, flash
+from flask import Flask, render_template, redirect, request, flash, jsonify
 from models.actuators.actuator_scheduler import actuator_scheduler
 # from models.sensors.sensor_scheduler import sensor_scheduler
 from models.actuators.actuator_controller import actuator_controller
@@ -10,9 +10,9 @@ app.secret_key = '3e340752-90a4-402b-9c61-3f3f351f0efe'
 
 @app.route("/")
 def index():
-    light_status = actuator_controller.led_controller.status
-    fan_status = actuator_controller.air_controller.status
-
+    light_status = actuator_controller.led_controller.main_led_power.value
+    fan_status = actuator_controller.air_controller.status()
+    print(light_status)
 
     return render_template('schedule.html', scheduler_status=actuator_scheduler.status,
                            irrigation_schedule=actuator_scheduler.irrigation_schedule,
@@ -61,11 +61,19 @@ def update_light_status():
 @app.route("/update_fan_status", methods=['POST'])
 def update_fan_status():
     status = int(request.json['status'])
+    print("update fan status: ", status)
     if status: 
         actuator_controller.air_controller.on()
     else: 
         actuator_controller.air_controller.off()
     return redirect("/")
+
+
+
+# @app.route("/light/status")
+# def get_light_status():
+#     status = actuator_controller.led_controller.status
+#     return jsonify(light_status=status)
 
 
 @app.route("/air/on")
@@ -83,12 +91,14 @@ def air_off():
 @app.route("/irg/run", methods=['POST'])
 def run_water_cycle():
     duration = int(request.form['duration'])
+    nutrient = bool(request.form.get('nutrient'))
+    print(nutrient)
     print(duration)
     level = int(request.form['level'])
     levels = [level] if level else None
-    # TODO add only choosing that level
-    # actuator_scheduler.run_immediate_irrigation_job(duration=duration)
-    actuator_controller.irrigation_controller.run_cycle(duration=duration, nutrient=False, levels=levels)
+    # # TODO add only choosing that level
+    # # actuator_scheduler.run_immediate_irrigation_job(duration=duration)
+    actuator_controller.irrigation_controller.run_cycle(duration=duration, nutrient=nutrient, levels=levels)
 
     return redirect("/")
 

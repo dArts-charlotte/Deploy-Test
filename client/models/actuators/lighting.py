@@ -49,6 +49,8 @@ class LedMain():
     def power_on(self):
         '''Powers on the main PWR, main LED and supplemental LED's at last set levels'''
         self.main_led_power.on()
+        print('lights on!')
+        print(self.main_led_power.value)
         # time.sleep(.5)
         # self.main_led.off() #works reversly
         # self.led_supp_one.on()
@@ -62,6 +64,9 @@ class LedMain():
     def power_off(self):
         """Powers off the main PWR, main LED and supplemental LED's at last set levels"""
         self.main_led_power.off()
+        print('lights off!')
+        print(self.main_led_power.value)
+        
 
 
 

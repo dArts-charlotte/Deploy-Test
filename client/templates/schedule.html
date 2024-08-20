@@ -32,6 +32,26 @@
 	</script>
 	<script>
 
+	$(document).ready(function updateLightSwitch() {
+		$.ajax({
+			url: "/light/status", // This URL will need to be provided by your backend
+			type: "GET",
+			success: function(response) {
+				// Assume the response contains a JSON object with the light status in a boolean format
+				var lightSwitch = $('#light-toggle');
+				if (response.light_status === true) {
+					light-status.prop('checked', true);
+				} else {
+					
+					lightSwitch.prop('checked', false);
+				}
+			},
+			error: function() {
+				console.error("Failed to fetch the light status.");
+			}
+		});});
+
+
 	$(document).ready(function() {
 		// function to update the light level
 		function updateLightStatus(light_status) {
@@ -136,8 +156,15 @@
 											<option value="2">Level 2</option>
 											<option value="3">Level 3</option>
 											<option value="4">Level 4</option>
+											<option value="5">Level 5</option>
+											<option value="6">Level 6</option>
+											<option value="7">Level 7</option>
+											<option value="8">Level 8</option>
+												
 
 										</select>
+										<span><input type="checkbox" id='nutrient' name="nutrient"></span>
+										<label for="nutrient" class="status-label">Nutrient</label>
 										<input type="submit" value="run">
 						
 									</form>
@@ -156,6 +183,7 @@
 							<label class="switch">
 								<input type="checkbox" id="fan-toggle" {% if fan_status %}checked{% endif %}>
 								<span class="slider round"></span>
+
 							</label>
 						</div>
 					</div>

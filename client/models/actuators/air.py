@@ -11,7 +11,7 @@ class Air:
         self.AIRMain = DigitalOutputDevice(main_air_gpio)
         
     def status(self):
-        return 1
+        return not self.AIRMain.value
 
     def on(self):
         self.AIRMain.off()
