@@ -8,9 +8,14 @@ from csv import DictWriter
 from .actuator_controller import actuator_controller
 from .config import *
 
+from dataaccess import sqlite
+
 logging.basicConfig(filename='amps_v2.log',
                     format='%(asctime)s %(levelname)s: %(message)s',
                     level=logging.INFO)
+
+
+
 
 
 class ActuatorScheduler:
@@ -21,19 +26,34 @@ class ActuatorScheduler:
         self.irrigation_schedule = []
         self.lighting_schedule = []
         self.air_schedule = []
-        irrigation_schedule = [(datetime.strptime(cycle_time, "%H:%M:%S"), duration) for cycle_time, duration in
-                               IRRIGATION_SCHEDULE]
-        lighting_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
-                             for time_on, time_off in LIGHTING_SCHEDULE]
-        print(lighting_schedule)
-        air_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
-                        for time_on, time_off in AIR_SCHEDULE]
 
-        self.add_irrigation_jobs(irrigation_schedule=irrigation_schedule)
-        self.add_air_jobs(air_schedule=air_schedule)
-        self.add_lighting_jobs(lighting_schedule=lighting_schedule)
+        conn = sqlite.get_database_connection()
+        self.load_air_schedule(conn)
+        self.load_irrigation_schedule(conn)
+        self.load_lighting_schedule(conn)
+        conn.close()
+
+        
+
+        self.add_irrigation_jobs(irrigation_schedule=self.irrigation_schedule)
+        self.add_air_jobs(air_schedule=self.air_schedule)
+        self.add_lighting_jobs(lighting_schedule=self.lighting_schedule)
         self.status = False
         self.initiated = False
+
+    def load_irrigation_schedule(self, conn):
+        IRRIGATION_SCHEDULE = sqlite.load_irrigation_schedule(conn)
+        self.irrigation_schedule = [(datetime.strptime(cycle_time, "%H:%M:%S"), duration) for cycle_time, duration in
+                               IRRIGATION_SCHEDULE]
+
+    def load_lighting_schedule(self, conn):
+        LIGHTING_SCHEDULE = sqlite.load_lighting_schedule(conn)
+        self.lighting_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
+                             for time_on, time_off in LIGHTING_SCHEDULE]
+    def load_air_schedule(self, conn):
+        AIR_SCHEDULE = sqlite.load_air_schedule(conn)  # If you have entries for air schedule
+        self.air_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
+                             for time_on, time_off in AIR_SCHEDULE]
 
     def reinitiate_state(self):
         current_time = datetime.now().time()
@@ -51,7 +71,6 @@ class ActuatorScheduler:
         for scheduled_window in self.lighting_schedule:
             if scheduled_window[0].time() <= current_time <= scheduled_window[1].time():
                 actuator_controller.led_controller.power_on()
-                print('lights on')
                 print('lights on')
                 break
         else:
@@ -82,20 +101,26 @@ class ActuatorScheduler:
         self.immediate_scheduler.add_job(lambda :actuator_controller.irrigation_controller.run_cycle(duration=duration, nutrient=False))
         print(self.immediate_scheduler.get_jobs())
 
-    def add_irrigation_jobs(self, irrigation_schedule: List):
+    def add_irrigation_jobs(self, irrigation_schedule: List, alter=True):
         irrigation_jobs = [
             self.scheduler.add_job(lambda: actuator_controller.irrigation_controller.run_cycle(duration=duration),
                                    'cron',
                                    id=f'IRG-{irrigation_time.time()}', hour=irrigation_time.hour,
                                    minute=irrigation_time.minute) for
             irrigation_time, duration in irrigation_schedule]
-        self.irrigation_schedule += irrigation_schedule
-        self.irrigation_schedule.sort()
+        if alter:
+            conn = sqlite.get_database_connection()
+            [sqlite.insert_irrigation_schedule_with_datetime(conn=conn, start_datetime=irrigation_time, duration=duration) for
+            irrigation_time, duration in irrigation_schedule]
+            self.irrigation_schedule = sqlite.load_irrigation_schedule(conn=conn)
+            conn.close()
+
 
         return irrigation_jobs
 
-    def add_air_jobs(self, air_schedule):
-        self.valid_schedule(time_schedule=self.air_schedule + air_schedule)
+    def add_air_jobs(self, air_schedule, alter=True):
+        if alter:
+            self.valid_schedule(time_schedule=self.air_schedule + air_schedule)
         air_on_jobs = [
             self.scheduler.add_job(actuator_controller.air_controller.on, 'cron', hour=air_on_time.hour,
                                    id=f'FAN-ON-{air_on_time.time()}',
@@ -108,12 +133,17 @@ class ActuatorScheduler:
                                    minute=air_off_time.minute)
             for air_on_time, air_off_time in air_schedule
         ]
-        self.air_schedule += air_schedule
-        self.air_schedule.sort()
+        if alter:
+            conn = sqlite.get_database_connection()
+            [sqlite.insert_air_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
+            start_time, end_time in air_schedule]
+            self.air_schedule = sqlite.load_air_schedule(conn=conn)
+            conn.close()
         return air_on_jobs + air_off_jobs
 
-    def add_lighting_jobs(self, lighting_schedule):
-        self.valid_schedule(time_schedule=self.lighting_schedule + lighting_schedule)
+    def add_lighting_jobs(self, lighting_schedule, alter=True):
+        if alter:
+            self.valid_schedule(time_schedule=self.lighting_schedule + lighting_schedule)
 
         lighting_on_jobs = [
             self.scheduler.add_job(actuator_controller.led_controller.power_on, 'cron',
@@ -126,22 +156,27 @@ class ActuatorScheduler:
                                    hour=lighting_off_time.hour, minute=lighting_off_time.minute) for
             lighting_on_time, lighting_off_time in lighting_schedule]
 
-        self.lighting_schedule += lighting_schedule
-        self.lighting_schedule.sort()
+        if alter:
+            conn = sqlite.get_database_connection()
+            [sqlite.insert_lighting_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
+            start_time, end_time in lighting_schedule]
+            self.lighting_schedule = sqlite.load_lighting_schedule(conn=conn)
+            conn.close()
         return lighting_on_jobs + lighting_off_jobs
 
     def remove_irrigation_job(self, scheduled_time):
 
         try:
 
-            job_id = f'IRG-{scheduled_time}'
-            scheduled_datetime = datetime.strptime(scheduled_time, "%H:%M:%S")
 
-            self.scheduler.remove_job(job_id)
-            for job in self.irrigation_schedule:
-                if job[0] == scheduled_datetime:
-                    self.irrigation_schedule.remove(job)
-                    break
+            with  sqlite.get_database_connection() as conn:
+                job_id = f'IRG-{scheduled_time}'
+                scheduled_datetime = datetime.strptime(scheduled_time, "%H:%M:%S")
+                self.scheduler.remove_job(job_id)
+                sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime)
+                self.irrigation_schedule = sqlite.load_irrigation_schedule(conn=conn)
+                conn.close()
+
             if self.status:
                 self.reinitiate_state()
 
@@ -150,29 +185,28 @@ class ActuatorScheduler:
             raise e
 
     def remove_window_jobs(self, scheduled_window, job_type):
-        scheduled_list = self.lighting_schedule if job_type == 'LIGHT' else self.air_schedule
+        with  sqlite.get_database_connection() as conn:
+            try:    
+                on_time, off_time = [datetime.strptime(scheduled_time, "%H:%M:%S") for scheduled_time in
+                                    scheduled_window.split('-')]
+                on_id = f'{job_type}-ON-{on_time.time()}'
+                off_id = f'{job_type}-OFF-{off_time.time()}'
 
-        on_time, off_time = [datetime.strptime(scheduled_time, "%H:%M:%S") for scheduled_time in
-                             scheduled_window.split('-')]
-        on_id = f'{job_type}-ON-{on_time.time()}'
-        off_id = f'{job_type}-OFF-{off_time.time()}'
-        for i, window in enumerate(scheduled_list):
-            if window[0] == on_time and window[1] == off_time:
-                try:
-                    scheduled_list.pop(i)
-                    self.scheduler.remove_job(on_id)
-                    self.scheduler.remove_job(off_id)
-                    # TODO call db and remove by job_ids
-                    break
+                self.scheduler.remove_job(on_id)
+                self.scheduler.remove_job(off_id)
+                if job_type == 'LIGHT':
+                    sqlite.remove_lighting_schedule(start_time=on_time, end_time=off_time)
+                elif job_type == 'AIR':
+                    sqlite.remove_air_schedule(start_time=on_time, end_time=off_time)
+                    
 
-                except Exception as e:
-                    logging.error(e)
-                    raise e
-        if self.status:
-            self.reinitiate_state()
-
-    # def create_other_jobs(self):
-    #     self.scheduler.add_job(actuator_controller.sol_check, 'interval', minutes=30)
+                if self.status:
+                    self.reinitiate_state()
+            except Exception as e:
+                logging.error(e)
+                conn.close()
+                raise e
+        
 
     def start(self):
         if not self.status:
