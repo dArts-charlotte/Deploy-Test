@@ -48,8 +48,11 @@ class ActuatorScheduler:
 
     def load_lighting_schedule(self, conn):
         LIGHTING_SCHEDULE = sqlite.load_lighting_schedule(conn)
+        print(LIGHTING_SCHEDULE)
         self.lighting_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
                              for time_on, time_off in LIGHTING_SCHEDULE]
+        print('self', self.lighting_schedule)
+
     def load_air_schedule(self, conn):
         AIR_SCHEDULE = sqlite.load_air_schedule(conn)  # If you have entries for air schedule
         self.air_schedule = [(datetime.strptime(time_on, "%H:%M:%S"), datetime.strptime(time_off, "%H:%M:%S"))
