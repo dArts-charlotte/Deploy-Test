@@ -8,7 +8,7 @@ from csv import DictWriter
 from .actuator_controller import actuator_controller
 from .config import *
 
-from dataaccess import sqlite
+from .dataaccess import sqlite
 
 logging.basicConfig(filename='amps_v2.log',
                     format='%(asctime)s %(levelname)s: %(message)s',

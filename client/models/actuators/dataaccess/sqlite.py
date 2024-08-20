@@ -1,7 +1,7 @@
 import sqlite3
 
 def get_database_connection():
-    conn = sqlite3.connect('schedule.db')
+    conn = sqlite3.connect('./models/actuators/dataaccess/schedule.db')
     return conn
 
 def load_irrigation_schedule(conn):
