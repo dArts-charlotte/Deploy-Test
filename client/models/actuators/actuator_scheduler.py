@@ -16,9 +16,6 @@ logging.basicConfig(filename='amps_v2.log',
 class ActuatorScheduler:
 
     def __init__(self):
-        # converting times strings to time objects
-        # TODO get this data from database instead of reading locally
-
         self.scheduler = BackgroundScheduler()
         self.immediate_scheduler = BackgroundScheduler()
         self.irrigation_schedule = []
@@ -35,7 +32,6 @@ class ActuatorScheduler:
         self.add_irrigation_jobs(irrigation_schedule=irrigation_schedule)
         self.add_air_jobs(air_schedule=air_schedule)
         self.add_lighting_jobs(lighting_schedule=lighting_schedule)
-        # self.create_other_jobs()
         self.status = False
         self.initiated = False
 

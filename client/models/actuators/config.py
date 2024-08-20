@@ -4,26 +4,17 @@ from enum import Enum
 
 class LightingGPIOs:
     MAIN_POWER = 19
-    # MAIN_DIM = 25
-    # SUPP_ONE_DIM = 13
-    # SUPP_TWO_DIM = 12
-
 
 class IrrigationGPIOs:
     WATER_SOL = 17
     PRESS_RELIEF = 5
     NUTR_SOL = 27
     TANK_SWITCH = 14                                                             
-    # TODO
 
 
 class TankSensorGPIOs:
     MAIN_TANK_SENSOR_FULL = 20
     MAIN_TANK_SENSOR_EMPTY = 5
-    # Drain Supply Sensors
-    #DRAIN_TANK_SENSOR_FULL = 16
-    #DRAIN_TANK_SENSOR_EMPTY = 26
-
 
 class LevelSolenoidsGPIOs(Enum):
     LEVEL_1 = 22
@@ -48,12 +39,7 @@ AIR_MAIN_GPIO = 26
 
 DEFAULT_WATER_CYCLE_DURATION = 30
 IRRIGATION_SCHEDULE = [
-#     ("00:30:00", DEFAULT_WATER_CYCLE_DURATION),
     ("06:30:00", DEFAULT_WATER_CYCLE_DURATION),
-   # ("10:30:00", 60),
-
-   # ("14:30:00", DEFAULT_WATER_CYCLE_DURATION),
-   # ("19:00:00", DEFAULT_WATER_CYCLE_DURATION),
     ("22:30:00", DEFAULT_WATER_CYCLE_DURATION),
     ]
 
@@ -72,5 +58,4 @@ LIGHTING_SCHEDULE = [
     ("08:00:00", "18:30:00")
 ]
 AIR_SCHEDULE = [
-    #("07:00:00", "10:00:00")
 ]

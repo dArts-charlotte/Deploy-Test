@@ -2,11 +2,12 @@ import logging
 from datetime import datetime
 from flask import Flask, render_template, redirect, request, flash, jsonify
 from models.actuators.actuator_scheduler import actuator_scheduler
-# from models.sensors.sensor_scheduler import sensor_scheduler
 from models.actuators.actuator_controller import actuator_controller
 
 app = Flask(__name__)
-app.secret_key = '3e340752-90a4-402b-9c61-3f3f351f0efe'
+import os
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
+
 
 @app.route("/")
 def index():
@@ -23,7 +24,6 @@ def index():
 @app.route("/scheduler/on")
 def start_scheduler():
     actuator_scheduler.start()
-    # sensor_scheduler.start()
 
     return redirect("/")
 
@@ -31,7 +31,6 @@ def start_scheduler():
 @app.route("/scheduler/off")
 def stop_scheduler():
     actuator_scheduler.pause()
-    # sensor_scheduler.pause()
 
     return redirect("/")
 
@@ -69,13 +68,6 @@ def update_fan_status():
     return redirect("/")
 
 
-
-# @app.route("/light/status")
-# def get_light_status():
-#     status = actuator_controller.led_controller.status
-#     return jsonify(light_status=status)
-
-
 @app.route("/air/on")
 def air_on():
     actuator_controller.air_controller.on()
@@ -96,8 +88,6 @@ def run_water_cycle():
     print(duration)
     level = int(request.form['level'])
     levels = [level] if level else None
-    # # TODO add only choosing that level
-    # # actuator_scheduler.run_immediate_irrigation_job(duration=duration)
     actuator_controller.irrigation_controller.run_cycle(duration=duration, nutrient=nutrient, levels=levels)
 
     return redirect("/")
@@ -141,10 +131,6 @@ def add_time():
 
 
 if __name__ == '__main__':
-    app.debug = True
+    app.debug = False
     actuator_scheduler.start()
     app.run()
-
-# actuator_scheduler.start()
-# while True:
-#     pass

@@ -4,8 +4,6 @@ import time
 import logging
 
 
-# TODO add timing to the logging info
-
 class Air:
     def __init__(self, main_air_gpio):
         self.AIRMain = DigitalOutputDevice(main_air_gpio)

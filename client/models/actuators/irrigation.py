@@ -26,63 +26,17 @@ class Irrigation:
         self.tank_switch_sol = DigitalOutputDevice(tank_switch_sol_gpio)
         self.nutr_sol = DigitalOutputDevice(nutr_sol_gpio)
         self.levels_sols = [DigitalOutputDevice(level_sol_gpio) for level_sol_gpio in levels_sol_gpios]
-        print(len(self.levels_sols))
-
-    
-
-    # def run_cycle(self, duration, nutrient=False, levels=None):
-
-    #     source_sol = self.nutr_sol if nutrient else self.water_sol
-    #     water_sleep_time = 1
-    #     pressure_relief_time = 2
-    #     source_sol.on()
-    #     print(source_sol, 'Source Solenoid Turned On!')
-    #     print(f'Waiting for {water_sleep_time} seconds...')
-    #     time.sleep(water_sleep_time)
-
-    #     #Pressure Relief Turn On
-    #     self.pressure_relief_sol.on()
-    #     print(self.pressure_relief_sol, 'Pressure Relief Solenoid Turned On!')
-    #     print(f'Waiting for {pressure_relief_time} seconds...')
-    #     time.sleep(pressure_relief_time)
-    #     self.pressure_relief_sol.off()
-    #     print(self.pressure_relief_sol, 'Pressure Relief Solenoid Turned Off!')
 
 
-    #     #Levels
-    #     levels_sols = [self.levels_sols[level] for level in levels] if levels else self.levels_sols
-    #     level_pressure_time = 5
-    #     for sol in levels_sols:
-    #         sol.on()
-    #         print(sol, 'Solenoid level Turned On!')
-    #         print(f'Waiting for {level_pressure_time} seconds...')
-    #         time.sleep(level_pressure_time)
-    #         sol.off()
-    #         print(sol, 'Solenoid level Turned Off!')
-    #         self.pressure_relief_sol.on()
-    #         print(self.pressure_relief_sol, 'Pressure Relief Solenoid Turned On!')
-    #         print(f'Waiting for {duration} seconds...')
-    #         time.sleep(duration)
-    #         self.pressure_relief_sol.off()
-    #         print(self.pressure_relief_sol, 'Pressure Relief Solenoid Turned Off!')
-    #         time.sleep(1)
-    #         print('Irrigation for this level has been completed!')
-
-    #     source_sol.off()
-    #     print(source_sol, 'Source Solenoid Turned On!') 
-        
 
     def run_cycle(self, duration, nutrient=False, levels=None):
         source_sol = self.nutr_sol if nutrient else self.water_sol
         levels_sols = [self.levels_sols[level-1] for level in levels] if levels else self.levels_sols
-        print(levels, levels_sols)
-        # return
         primeTime = 15
         source_sol.on()
         time.sleep(20)
         levels = range(1, 9) if not levels else levels
         levels = list(reversed(levels))
-        # levels
         for i,level in enumerate(levels):
             sol = self.levels_sols[level - 1]
             level_duration = duration + IRRIGATION_LEVEL_OFFSET[level]

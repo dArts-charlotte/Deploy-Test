@@ -18,32 +18,10 @@ class LedMain():
         off: turns all off'''
 
     def __init__(self, power_gpio, 
-    # dim_gpio, 
-    # supp1_gpio, 
-    # supp2_gpio, 
-    # supp1_dim=0.5, 
-    # supp2_dim=0.5, 
-    # main_dim=0.5
+
     ):
-        # assign MainLED power on/off
         self.main_led_power = gpiozero.DigitalOutputDevice(power_gpio)
-        # assign lightingLedMain
-        # self.main_led = gpiozero.PWMLED(
-        #     dim_gpio)
-        # self.main_led.frequency = 1000
 
-        # # assign lightingLedSuppOne as PWMLED
-        # self.led_supp_one = gpiozero.PWMLED(supp1_gpio)
-        # self.led_supp_one.frequency = 1000
-
-        # # assign lightingLedSuppTwo as PWMLED
-        # self.led_supp_two = gpiozero.PWMLED(supp2_gpio)
-        # self.led_supp_two.frequency = 1000
-
-        # # setting the initial Dim value for lightingLedSuppOne
-        # self.led_supp_one_dim = supp1_dim
-        # # setting the initial Dim value for lightingLedSuppTwo
-        # self.led_supp_two_dim = supp2_dim
         logging.info('Class Initiated')
 
     def power_on(self):
@@ -51,10 +29,7 @@ class LedMain():
         self.main_led_power.on()
         print('lights on!')
         print(self.main_led_power.value)
-        # time.sleep(.5)
-        # self.main_led.off() #works reversly
-        # self.led_supp_one.on()
-        # self.led_supp_two.on()
+
 
     def dim(self, main_dim=0, supp1_dim=0, supp2_dim=0): #keep main dim at 0
         """Set the dim level for the main LED. The supplemental LED's are asigned based on the configuration file data

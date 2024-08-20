@@ -298,3 +298,6 @@ bundles/*
 
 #interface prototype
 interface/*
+
+#dbs
+*.db
