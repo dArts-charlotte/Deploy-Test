@@ -30,8 +30,7 @@ class ActuatorScheduler:
         with sqlite.get_database_connection() as conn:
             self.load_air_schedule(conn)
             self.load_irrigation_schedule(conn)
-            conn.close()
-
+            self.load_lighting_schedule(conn)
         
 
         self.add_irrigation_jobs(irrigation_schedule=self.irrigation_schedule, alter=False)
