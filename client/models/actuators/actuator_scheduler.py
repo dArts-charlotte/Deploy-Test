@@ -177,7 +177,7 @@ class ActuatorScheduler:
                 scheduled_datetime = datetime.strptime(scheduled_time, "%H:%M:%S")
                 self.scheduler.remove_job(job_id)
                 sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime)
-                self.irrigation_schedule = sqlite.load_irrigation_schedule(conn=conn)
+                self.load_irrigation_schedule
                 conn.close()
 
             if self.status:
