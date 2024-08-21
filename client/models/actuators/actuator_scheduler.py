@@ -137,11 +137,10 @@ class ActuatorScheduler:
             for air_on_time, air_off_time in air_schedule
         ]
         if alter:
-            conn = sqlite.get_database_connection()
-            [sqlite.insert_air_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
-            start_time, end_time in air_schedule]
-            self.air_schedule = sqlite.load_air_schedule(conn=conn)
-            conn.close()
+            with sqlite.get_database_connection() as conn:
+                [sqlite.insert_air_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
+                start_time, end_time in air_schedule]
+                self.load_air_schedule(conn=conn)
         return air_on_jobs + air_off_jobs
 
     def add_lighting_jobs(self, lighting_schedule, alter=True):
@@ -160,11 +159,10 @@ class ActuatorScheduler:
             lighting_on_time, lighting_off_time in lighting_schedule]
 
         if alter:
-            conn = sqlite.get_database_connection()
-            [sqlite.insert_lighting_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
-            start_time, end_time in lighting_schedule]
-            self.lighting_schedule = sqlite.load_lighting_schedule(conn=conn)
-            conn.close()
+            with sqlite.get_database_connection() as conn:
+                [sqlite.insert_lighting_schedule_with_datetime(conn=conn, start_datetime=start_time, end_datetime=end_time) for
+                start_time, end_time in lighting_schedule]
+                self.load_lighting_schedule(conn=conn)
         return lighting_on_jobs + lighting_off_jobs
 
     def remove_irrigation_job(self, scheduled_time):
@@ -178,7 +176,6 @@ class ActuatorScheduler:
                 self.scheduler.remove_job(job_id)
                 sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime)
                 self.load_irrigation_schedule
-                conn.close()
 
             if self.status:
                 self.reinitiate_state()
@@ -200,13 +197,11 @@ class ActuatorScheduler:
                     with  sqlite.get_database_connection() as conn:
                         sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
                         self.load_lighting_schedule(conn=conn)
-                        conn.close()
 
                 elif job_type == 'AIR':
                     with  sqlite.get_database_connection() as conn:
                         sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
                         self.load_air_schedule(conn=conn)
-                        conn.close()
                     
                 
                 if self.status:
