@@ -199,13 +199,13 @@ class ActuatorScheduler:
                 if job_type == 'LIGHT':
                     with  sqlite.get_database_connection() as conn:
                         sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
-                        self.lighting_schedule = sqlite.load_lighting_schedule(conn)
+                        self.load_lighting_schedule(conn=conn)
                         conn.close()
 
                 elif job_type == 'AIR':
                     with  sqlite.get_database_connection() as conn:
                         sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
-                        self.air_schedule = sqlite.load_air_schedule(conn)
+                        self.load_air_schedule(conn=conn)
                         conn.close()
                     
                 
