@@ -106,6 +106,10 @@ def remove_time(job_type, time):
 def light_status():
     return actuator_controller.led_controller.status()
 
+@app.route("/fan/status")
+def light_status():
+    return actuator_controller.air_controller.status()
+
 
 @app.route("/add/", methods=["POST"])
 def add_time():
