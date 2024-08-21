@@ -115,8 +115,7 @@ class ActuatorScheduler:
             conn = sqlite.get_database_connection()
             [sqlite.insert_irrigation_schedule_with_datetime(conn=conn, start_datetime=irrigation_time, duration=duration) for
             irrigation_time, duration in irrigation_schedule]
-            self.irrigation_schedule = sqlite.load_irrigation_schedule(conn=conn)
-            conn.close()
+            self.load_irrigation_schedule(conn) 
 
 
         return irrigation_jobs
