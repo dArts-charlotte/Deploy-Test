@@ -52,7 +52,7 @@ def remove_irrigation_schedule(conn, start_time):
     cursor = conn.cursor()
     print('removing irg ', start_time)
     cursor.execute(
-        f"DELETE FROM irrigation_schedule WHERE start_time = {start_time}",
+        f"DELETE FROM irrigation_schedule WHERE start_time = {start_time};",
     )
     conn.commit()
 
