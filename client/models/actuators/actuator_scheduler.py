@@ -172,9 +172,8 @@ class ActuatorScheduler:
 
             with  sqlite.get_database_connection() as conn:
                 job_id = f'IRG-{scheduled_time}'
-                scheduled_datetime = datetime.strptime(scheduled_time, "%H:%M:%S")
                 self.scheduler.remove_job(job_id)
-                sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime.time())
+                sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_time)
                 self.load_irrigation_schedule
 
             if self.status:
@@ -186,21 +185,21 @@ class ActuatorScheduler:
 
     def remove_window_jobs(self, scheduled_window, job_type):
             try:    
-                on_time, off_time = [datetime.strptime(scheduled_time, "%H:%M:%S") for scheduled_time in
-                                    scheduled_window.split('-')]
-                on_id = f'{job_type}-ON-{on_time.time()}'
-                off_id = f'{job_type}-OFF-{off_time.time()}'
+                on_time, off_time = scheduled_window.split('-')
+                
+                on_id = f'{job_type}-ON-{on_time}'
+                off_id = f'{job_type}-OFF-{off_time}'
 
                 self.scheduler.remove_job(on_id)
                 self.scheduler.remove_job(off_id)
                 if job_type == 'LIGHT':
                     with  sqlite.get_database_connection() as conn:
-                        sqlite.remove_lighting_schedule(conn=conn, start_time=on_time.time(), end_time=off_time.time())
+                        sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
                         self.load_lighting_schedule(conn=conn)
 
                 elif job_type == 'AIR':
                     with  sqlite.get_database_connection() as conn:
-                        sqlite.remove_air_schedule(conn=conn, start_time=on_time.time(), end_time=off_time.time())
+                        sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
                         self.load_air_schedule(conn=conn)
                     
                 
