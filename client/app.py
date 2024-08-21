@@ -102,6 +102,14 @@ def remove_time(job_type, time):
         actuator_scheduler.remove_window_jobs(scheduled_window=time, job_type=job_type)
     return redirect("/")
 
+@app.route("/light/status")
+def light_status():
+    return actuator_controller.led_controller.status()
+
+@app.route("/light/status")
+def light_status():
+    return actuator_controller.led_controller.status()
+
 
 @app.route("/add/", methods=["POST"])
 def add_time():
