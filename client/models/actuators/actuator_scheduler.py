@@ -174,7 +174,7 @@ class ActuatorScheduler:
                 job_id = f'IRG-{scheduled_time}'
                 self.scheduler.remove_job(job_id)
                 sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_time)
-                self.load_irrigation_schedule
+                self.load_irrigation_schedule(conn=conn)
 
             if self.status:
                 self.reinitiate_state()
