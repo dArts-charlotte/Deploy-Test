@@ -9,9 +9,10 @@ import os
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key')
 
 
+
 @app.route("/")
 def index():
-    light_status = actuator_controller.led_controller.main_led_power.value
+    light_status = actuator_controller.led_controller.status()
     fan_status = actuator_controller.air_controller.status()
     print(light_status)
 

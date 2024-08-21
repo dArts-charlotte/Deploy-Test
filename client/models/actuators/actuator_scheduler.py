@@ -27,11 +27,10 @@ class ActuatorScheduler:
         self.lighting_schedule = []
         self.air_schedule = []
 
-        conn = sqlite.get_database_connection()
-        self.load_air_schedule(conn)
-        self.load_irrigation_schedule(conn)
-        self.load_lighting_schedule(conn)
-        conn.close()
+        with sqlite.get_database_connection() as conn:
+            self.load_air_schedule(conn)
+            self.load_irrigation_schedule(conn)
+            conn.close()
 
         
 
