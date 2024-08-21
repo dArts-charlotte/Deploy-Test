@@ -174,7 +174,7 @@ class ActuatorScheduler:
                 job_id = f'IRG-{scheduled_time}'
                 scheduled_datetime = datetime.strptime(scheduled_time, "%H:%M:%S")
                 self.scheduler.remove_job(job_id)
-                sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime)
+                sqlite.remove_irrigation_schedule(conn=conn, start_time=scheduled_datetime.time())
                 self.load_irrigation_schedule
 
             if self.status:
@@ -195,12 +195,12 @@ class ActuatorScheduler:
                 self.scheduler.remove_job(off_id)
                 if job_type == 'LIGHT':
                     with  sqlite.get_database_connection() as conn:
-                        sqlite.remove_lighting_schedule(conn=conn, start_time=on_time, end_time=off_time)
+                        sqlite.remove_lighting_schedule(conn=conn, start_time=on_time.time(), end_time=off_time.time())
                         self.load_lighting_schedule(conn=conn)
 
                 elif job_type == 'AIR':
                     with  sqlite.get_database_connection() as conn:
-                        sqlite.remove_air_schedule(conn=conn, start_time=on_time, end_time=off_time)
+                        sqlite.remove_air_schedule(conn=conn, start_time=on_time.time(), end_time=off_time.time())
                         self.load_air_schedule(conn=conn)
                     
                 
