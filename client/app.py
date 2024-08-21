@@ -107,7 +107,7 @@ def light_status():
     return actuator_controller.led_controller.status()
 
 @app.route("/fan/status")
-def light_status():
+def fan_status():
     return actuator_controller.air_controller.status()
 
 
